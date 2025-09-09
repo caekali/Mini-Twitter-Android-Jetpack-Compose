@@ -15,6 +15,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,23 +24,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.minitwitter.presentation.components.LabeledTextField
-import com.example.minitwitter.presentation.components.PrimaryButton
 import com.example.minitwitter.presentation.theme.MiniTwitterTheme
 
 @Composable
-fun LoginScreenRoot(viewModel: LoginViewModel = hiltViewModel()) {
+fun LoginScreenRoot(
+    viewModel: LoginViewModel = hiltViewModel(),
+    onGoToRegister: () -> Unit,
+    onLoginSuccess: () -> Unit
+) {
     val uiState by viewModel.uiState.collectAsState()
-    LoginScreen(
-        uiState = uiState, onEvent = {
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect {
             when (it) {
-                is LoginUiEvent.GoToRegister -> {}
-                else -> Unit
+                LoginNavigationEvent.NavigateToRegister -> onGoToRegister()
+                LoginNavigationEvent.NavigateToHome -> onLoginSuccess()
             }
-            viewModel.onEvent(it)
-        })
+        }
+    }
+    LoginScreen(uiState = uiState, onEvent = viewModel::onEvent)
 }
+
 
 @Composable
 fun LoginScreen(
@@ -89,8 +94,7 @@ fun LoginScreen(
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-            }
-        )
+            })
 
 
         OutlinedTextField(
@@ -109,8 +113,7 @@ fun LoginScreen(
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-            }
-        )
+            })
 
         Spacer(Modifier.height(16.dp))
 //        LabeledTextField(
