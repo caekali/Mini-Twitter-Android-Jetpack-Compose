@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -66,17 +68,56 @@ fun LoginScreen(
 
         Spacer(Modifier.height(24.dp))
 
-        LabeledTextField(
-            value = uiState.email, onValueChange = {
+//        LabeledTextField(
+//            value = uiState.email, onValueChange = {
+//                onEvent(LoginUiEvent.EmailChanged(it))
+//            }, label = "Email"
+//        )
+        OutlinedTextField(
+            value = uiState.email,
+            onValueChange = {
                 onEvent(LoginUiEvent.EmailChanged(it))
-            }, label = "Email"
+            },
+            label = { Text("Email") },
+            isError = uiState.emailError != null,
+            modifier = Modifier.fillMaxWidth(),
+            supportingText = {
+                if (uiState.emailError != null) {
+                    Text(
+                        text = uiState.emailError,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
         )
-        Spacer(Modifier.height(16.dp))
-        LabeledTextField(
-            value = uiState.password, onValueChange = {
+
+
+        OutlinedTextField(
+            value = uiState.password,
+            onValueChange = {
                 onEvent(LoginUiEvent.PasswordChanged(it))
-            }, label = "Password", isPassword = true
+            },
+            label = { Text("Password") },
+            isError = uiState.passwordError != null,
+            modifier = Modifier.fillMaxWidth(),
+            supportingText = {
+                if (uiState.passwordError != null) {
+                    Text(
+                        text = uiState.passwordError,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
         )
+
+        Spacer(Modifier.height(16.dp))
+//        LabeledTextField(
+//            value = uiState.password, onValueChange = {
+//                onEvent(LoginUiEvent.PasswordChanged(it))
+//            }, label = "Password", isPassword = true
+//        )
         Spacer(Modifier.height(16.dp))
 
         Row(
@@ -89,9 +130,18 @@ fun LoginScreen(
             }
         }
         Spacer(Modifier.height(8.dp))
-        PrimaryButton(label = "Sign Up", onClick = {
-            onEvent(LoginUiEvent.Submit)
-        })
+
+        Button(
+            onClick = { onEvent(LoginUiEvent.Submit) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !uiState.isLoading
+        ) {
+            Text(if (uiState.isLoading) "Loading..." else "Sign Up")
+        }
+
+//        PrimaryButton(label = "Sign Up", onClick = {
+//            onEvent(LoginUiEvent.Submit)
+//        })
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
@@ -105,7 +155,14 @@ fun LoginScreen(
             }
         }
 
-
+        uiState.generalError?.let {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }
 

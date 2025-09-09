@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.minitwitter.data.local.AuthPreferences
 import com.example.minitwitter.domain.usecase.LoginUseCase
+import com.example.minitwitter.util.exceptions.ApiValidationException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,17 +45,23 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
-            try {
-                val authResult = loginUseCase.invoke(email, password)
-                Log.d("LoginViewModel", "login: ${authResult}")
-                authPreferences.saveToken(authResult.token)
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message ?: "Something went wrong")
-                Log.d("LoginViewModel", "login: ${e.message}")
-
-            }
             _uiState.value = _uiState.value.copy(isLoading = true)
-
+            try {
+                val result = loginUseCase(email, password)
+                authPreferences.saveToken(result.token)
+                _uiState.value = LoginUiState(isLoading = false)
+            } catch (e: ApiValidationException) {
+                _uiState.value = LoginUiState(
+                    isLoading = false,
+                    emailError = e.errors["email"],
+                    passwordError = e.errors["password"]
+                )
+            } catch (e: Exception) {
+                _uiState.value = LoginUiState(
+                    isLoading = false,
+                    generalError = e.message
+                )
+            }
         }
     }
 

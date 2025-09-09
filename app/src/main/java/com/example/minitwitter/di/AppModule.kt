@@ -20,7 +20,7 @@ object AppModule {
     @Singleton
     fun provideApiService(): UserApiService {
         return Retrofit.Builder()
-            .baseUrl("https://6ef025e43d3c.ngrok-free.app/api/")
+            .baseUrl("https://82ac890a3eaf.ngrok-free.app/api/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(UserApiService::class.java)
@@ -34,6 +34,4 @@ object AppModule {
     ): AuthPreferences {
         return AuthPreferences(context)
     }
-
-
 }

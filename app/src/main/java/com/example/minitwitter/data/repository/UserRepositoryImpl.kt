@@ -7,10 +7,12 @@ import com.example.minitwitter.data.remote.UserApiService
 import com.example.minitwitter.domain.model.AuthResult
 import com.example.minitwitter.domain.model.User
 import com.example.minitwitter.domain.repository.UserRepository
+import com.example.minitwitter.util.exceptions.ApiValidationException
 
 import retrofit2.HttpException
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.util.Map
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor (
@@ -35,12 +37,12 @@ class UserRepositoryImpl @Inject constructor (
             val errorBody = e.response()?.errorBody()?.string()
             val type = object : TypeToken<ApiResponse<Unit>>() {}.type
             val apiError: ApiResponse<Unit>? = Gson().fromJson(errorBody, type)
-
-            val validationErrors = apiError?.errors
-                ?.joinToString(", ") { "${it.field}: ${it.message}" }
-
-            val finalMessage = validationErrors ?: apiError?.message ?: "Unexpected error"
-            throw Exception(finalMessage)
+            if (e.code() == 422 && apiError?.errors != null) {
+                val errorMap = apiError.errors.associate { it.field to it.message }
+                throw ApiValidationException(errorMap as Map<String, String>)
+            } else {
+                throw Exception(apiError?.errors?.get(0)?.message ?: "Unexpected error")
+            }
         }
     }
 }
