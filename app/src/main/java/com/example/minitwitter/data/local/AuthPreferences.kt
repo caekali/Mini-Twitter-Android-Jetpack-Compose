@@ -27,6 +27,11 @@ class AuthPreferences @Inject constructor(@ApplicationContext private val contex
     // Read token
     val token: Flow<String?> = context.dataStore.data.map { prefs -> prefs[TOKEN_KEY] }
 
+    val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[TOKEN_KEY]?.isNotEmpty() == true
+    }
+
+
     // Clear token
     suspend fun clearToken() {
         context.dataStore.edit { prefs ->

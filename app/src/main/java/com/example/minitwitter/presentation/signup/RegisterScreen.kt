@@ -1,4 +1,4 @@
-package com.example.minitwitter.presentation.signin
+package com.example.minitwitter.presentation.signup
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,11 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,28 +28,28 @@ import com.example.minitwitter.presentation.components.AppTextField
 import com.example.minitwitter.presentation.theme.MiniTwitterTheme
 
 @Composable
-fun LoginScreenRoot(
-    viewModel: LoginViewModel = hiltViewModel(),
-    onGoToRegister: () -> Unit,
-    onLoginSuccess: () -> Unit
+fun RegisterScreenRoot(
+    viewModel: RegisterViewModel = hiltViewModel(),
+    onGoToLogin: () -> Unit,
+    onRegisterSuccess: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect {
             when (it) {
-                LoginNavigationEvent.NavigateToRegister -> onGoToRegister()
-                LoginNavigationEvent.NavigateToHome -> onLoginSuccess()
+                RegisterNavigationEvent.NavigateToLogin -> onGoToLogin()
+                RegisterNavigationEvent.NavigateToHome -> onRegisterSuccess()
             }
         }
     }
-    LoginScreen(uiState = uiState, onEvent = viewModel::onEvent)
+    RegisterScreen(uiState = uiState, onEvent = viewModel::onEvent)
 }
 
 
 @Composable
-fun LoginScreen(
-    uiState: LoginUiState, onEvent: (LoginUiEvent) -> Unit
+fun RegisterScreen(
+    uiState: RegisterUiState, onEvent: (RegisterUiEvent) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -63,14 +60,14 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Welcome Back",
+            text = "Create Account",
             style = MaterialTheme.typography.displayMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
 
         Text(
-            text = "Sign in to continue",
+            text = "Join the conversation",
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.secondary
         )
@@ -78,34 +75,35 @@ fun LoginScreen(
         Spacer(Modifier.height(24.dp))
 
         AppTextField(
+            value = uiState.name,
+            onValueChange = { onEvent(RegisterUiEvent.NameChanged(it)) },
+            label = "Name",
+            isError = uiState.nameError != null,
+            errorText = uiState.nameError
+        )
+
+        AppTextField(
             value = uiState.email,
-            onValueChange = { onEvent(LoginUiEvent.EmailChanged(it)) },
+            onValueChange = { onEvent(RegisterUiEvent.EmailChanged(it)) },
             label = "Email",
             isError = uiState.emailError != null,
             errorText = uiState.emailError
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
 
         AppPasswordField(
             value = uiState.password,
-            onValueChange = { onEvent(LoginUiEvent.PasswordChanged(it)) },
+            onValueChange = { onEvent(RegisterUiEvent.PasswordChanged(it)) },
             label = "Password",
             isError = uiState.passwordError != null,
             errorText = uiState.passwordError
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
-        ) {
-            AppTextButton(text = "Forgot Password?", onClick = {
-
-            })
-        }
         Spacer(Modifier.height(8.dp))
 
         AppButton(
-            text = "Sign In",
-            onClick = { onEvent(LoginUiEvent.Submit) },
+            text = "Sign Up",
+            onClick = { onEvent(RegisterUiEvent.Submit) },
             modifier = Modifier.fillMaxWidth(),
             loading = uiState.isLoading
         )
@@ -115,9 +113,9 @@ fun LoginScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Don't have an account?", color = MaterialTheme.colorScheme.onBackground)
-            AppTextButton(text = "Sign Up", onClick = {
-                onEvent(LoginUiEvent.GoToRegister)
+            Text("Already have an account?", color = MaterialTheme.colorScheme.onBackground)
+            AppTextButton(text = "Sign in", onClick = {
+                onEvent(RegisterUiEvent.GoToLogin)
             })
         }
 
@@ -137,8 +135,8 @@ fun LoginScreen(
 @Composable
 fun LoginScreenPreview() {
     MiniTwitterTheme {
-        LoginScreen(
-            uiState = LoginUiState(), onEvent = {
+        RegisterScreen(
+            uiState = RegisterUiState(), onEvent = {
 
             })
     }

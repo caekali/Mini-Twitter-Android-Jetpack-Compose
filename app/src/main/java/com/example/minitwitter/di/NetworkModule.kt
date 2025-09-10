@@ -1,5 +1,6 @@
 package com.example.minitwitter.di
 
+import com.example.minitwitter.data.remote.AuthInterceptor
 import android.content.Context
 import com.example.minitwitter.data.local.AuthPreferences
 import com.example.minitwitter.data.remote.UserApiService
@@ -8,6 +9,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -16,15 +18,30 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+
     @Provides
     @Singleton
-    fun provideApiService(): UserApiService {
+    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://82ac890a3eaf.ngrok-free.app/api/")
+            .baseUrl("http://192.168.8.8:8000/api/")
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(UserApiService::class.java)
+    }
 
+
+    @Provides
+    @Singleton
+    fun provideApiService(retrofit: Retrofit): UserApiService {
+        return retrofit.create(UserApiService::class.java)
     }
 
     @Provides

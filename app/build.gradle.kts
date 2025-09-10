@@ -83,5 +83,7 @@ dependencies {
 
     implementation(libs.androidx.compose.material3.windowsizeclass)
     implementation(libs.androidx.material3.adaptive)
+
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
 

@@ -1,10 +1,9 @@
 package com.example.minitwitter.presentation.signin
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
+
 import androidx.lifecycle.viewModelScope
+import com.example.minitwitter.AuthViewModel
 import com.example.minitwitter.base.BaseViewModel
-import com.example.minitwitter.data.local.AuthPreferences
 import com.example.minitwitter.domain.usecase.LoginUseCase
 import com.example.minitwitter.util.exceptions.ApiValidationException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     val loginUseCase: LoginUseCase,
-    private val authPreferences: AuthPreferences
+    private val authViewModel: AuthViewModel
 ) : BaseViewModel<LoginNavigationEvent>() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -29,32 +28,11 @@ class LoginViewModel @Inject constructor(
             is LoginUiEvent.EmailChanged -> _uiState.update { it.copy(email = event.email) }
             is LoginUiEvent.PasswordChanged -> _uiState.update { it.copy(password = event.password) }
             LoginUiEvent.Submit -> {
-                sendEffect(LoginNavigationEvent.NavigateToHome)
-
-//                login(uiState.value.email, uiState.value.password)
+                login(uiState.value.email, uiState.value.password)
             }
             LoginUiEvent.GoToRegister -> sendEffect(LoginNavigationEvent.NavigateToRegister)
         }
     }
-
-//    fun onEvent(event: LoginUiEvent) {
-//        when (event) {
-//            is LoginUiEvent.EmailChanged -> {
-//                _uiState.value = _uiState.value.copy(email = event.email)
-//            }
-//
-//            is LoginUiEvent.PasswordChanged -> {
-//                _uiState.value = _uiState.value.copy(password = event.password)
-//            }
-//
-//            LoginUiEvent.Submit -> {
-//                login(uiState.value.email, uiState.value.password)
-//            }
-//
-//            else -> Unit
-//        }
-//    }
-
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
@@ -63,7 +41,7 @@ class LoginViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true)
             try {
                 val result = loginUseCase(email, password)
-                authPreferences.saveToken(result.token)
+                authViewModel.setLoggedIn(result.token)
                 sendEffect(LoginNavigationEvent.NavigateToHome)
                 _uiState.value = LoginUiState(isLoading = false)
             } catch (e: ApiValidationException) {
